@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 interface Appointment {
   id: string;
@@ -83,12 +83,15 @@ export default function AppointmentManager() {
     const patient = patients[id];
     if (patient && patient.name && patient.name[0]) {
       const name = patient.name[0];
-      return `${name.given?.join(" ") || ""} ${name.family || ""}`.trim() || `Patient ${id}`;
+      return (
+        `${name.given?.join(" ") || ""} ${name.family || ""}`.trim() ||
+        `Patient ${id}`
+      );
     }
     return `Patient ${id}`;
   };
 
-  const fetchAppointments = async () => {
+  const fetchAppointments = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
@@ -97,20 +100,25 @@ export default function AppointmentManager() {
       if (selectedDate) queryParams.append("date", selectedDate);
       if (selectedProvider) queryParams.append("provider", selectedProvider);
 
-      const response = await fetch(`/api/appointments?${queryParams.toString()}`, {
-        credentials: "include",
-      });
+      const response = await fetch(
+        `/api/appointments?${queryParams.toString()}`,
+        {
+          credentials: "include",
+        }
+      );
       if (!response.ok) throw new Error(await response.text());
       const data = await response.json();
-      setAppointments(data.entry?.map((e: any) => e.resource) || []);
+      setAppointments(
+        data.entry?.map((e: { resource: Appointment }) => e.resource) || []
+      );
     } catch (err) {
       setError((err as Error).message || "Failed to fetch appointments");
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedDate, selectedProvider, selectedPatient]);
 
-  const fetchAvailability = async () => {
+  const fetchAvailability = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
@@ -122,18 +130,25 @@ export default function AppointmentManager() {
       );
       if (!response.ok) throw new Error(await response.text());
       const data = await response.json();
-      setAvailableSlots(data.entry?.map((e: any) => e.resource) || []);
+
+      setAvailableSlots(
+        data.entry?.map((e: { resource: Slot }) => e.resource) || []
+      );
     } catch (err) {
       setError((err as Error).message || "Failed to fetch availability");
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedDate, selectedProvider]);
 
   useEffect(() => {
-    fetchAppointments();
-    fetchAvailability();
-  }, [selectedDate, selectedProvider, selectedPatient]);
+    const fetchData = async () => {
+      await fetchAppointments();
+      await fetchAvailability();
+    };
+
+    fetchData();
+  }, [fetchAppointments, fetchAvailability]);
 
   const handleBookAppointment = async () => {
     if (new Date(newAppointment.start) >= new Date(newAppointment.end)) {
@@ -271,7 +286,9 @@ export default function AppointmentManager() {
 
   return (
     <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20">
-      <h2 className="text-2xl font-bold text-slate-800 mb-4">Appointment Manager</h2>
+      <h2 className="text-2xl font-bold text-slate-800 mb-4">
+        Appointment Manager
+      </h2>
       {error && <div className="mb-4 text-red-600">{error}</div>}
       {loading && (
         <div className="flex items-center space-x-2 mb-4">
@@ -283,7 +300,9 @@ export default function AppointmentManager() {
       {/* Filters */}
       <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <label className="block text-sm font-medium text-slate-700">Date</label>
+          <label className="block text-sm font-medium text-slate-700">
+            Date
+          </label>
           <input
             type="date"
             value={selectedDate}
@@ -292,7 +311,9 @@ export default function AppointmentManager() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-700">Provider</label>
+          <label className="block text-sm font-medium text-slate-700">
+            Provider
+          </label>
           <select
             value={selectedProvider}
             onChange={(e) => setSelectedProvider(e.target.value)}
@@ -303,7 +324,9 @@ export default function AppointmentManager() {
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-700">Patient</label>
+          <label className="block text-sm font-medium text-slate-700">
+            Patient
+          </label>
           <select
             value={selectedPatient}
             onChange={(e) => setSelectedPatient(e.target.value)}
@@ -317,7 +340,9 @@ export default function AppointmentManager() {
 
       {/* Available Slots */}
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-slate-700 mb-2">Available Slots</h3>
+        <h3 className="text-lg font-semibold text-slate-700 mb-2">
+          Available Slots
+        </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {availableSlots.map((slot) => (
             <button
@@ -339,18 +364,24 @@ export default function AppointmentManager() {
 
       {/* Book New Appointment */}
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-slate-700 mb-2">Book New Appointment</h3>
+        <h3 className="text-lg font-semibold text-slate-700 mb-2">
+          Book New Appointment
+        </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <input
             type="datetime-local"
             value={newAppointment.start}
-            onChange={(e) => setNewAppointment({ ...newAppointment, start: e.target.value })}
+            onChange={(e) =>
+              setNewAppointment({ ...newAppointment, start: e.target.value })
+            }
             className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200"
           />
           <input
             type="datetime-local"
             value={newAppointment.end}
-            onChange={(e) => setNewAppointment({ ...newAppointment, end: e.target.value })}
+            onChange={(e) =>
+              setNewAppointment({ ...newAppointment, end: e.target.value })
+            }
             className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200"
           />
         </div>
@@ -365,7 +396,9 @@ export default function AppointmentManager() {
 
       {/* Appointments List */}
       <div>
-        <h3 className="text-lg font-semibold text-slate-700 mb-2">Appointments</h3>
+        <h3 className="text-lg font-semibold text-slate-700 mb-2">
+          Appointments
+        </h3>
         <div className="space-y-4">
           {appointments.map((appointment) => (
             <div key={appointment.id} className="bg-gray-50 p-4 rounded-md">
@@ -386,7 +419,9 @@ export default function AppointmentManager() {
                       p.actor.reference.startsWith("Practitioner/")
                     )?.actor.display ||
                       appointment.participant
-                        .find((p) => p.actor.reference.startsWith("Practitioner/"))
+                        .find((p) =>
+                          p.actor.reference.startsWith("Practitioner/")
+                        )
                         ?.actor.reference.split("/")[1]}
                   </p>
                   <p>
@@ -403,13 +438,17 @@ export default function AppointmentManager() {
                         start: toLocalInputValue(appointment.start),
                         end: toLocalInputValue(appointment.end),
                         patientId:
-                          appointment.participant.find((p) =>
-                            p.actor.reference.startsWith("Patient/")
-                          )?.actor.reference.split("/")[1] || "73337",
+                          appointment.participant
+                            .find((p) =>
+                              p.actor.reference.startsWith("Patient/")
+                            )
+                            ?.actor.reference.split("/")[1] || "73337",
                         providerId:
-                          appointment.participant.find((p) =>
-                            p.actor.reference.startsWith("Practitioner/")
-                          )?.actor.reference.split("/")[1] || "1",
+                          appointment.participant
+                            .find((p) =>
+                              p.actor.reference.startsWith("Practitioner/")
+                            )
+                            ?.actor.reference.split("/")[1] || "1",
                       });
                     }}
                     className="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded"
@@ -429,13 +468,23 @@ export default function AppointmentManager() {
                   <input
                     type="datetime-local"
                     value={newAppointment.start}
-                    onChange={(e) => setNewAppointment({ ...newAppointment, start: e.target.value })}
+                    onChange={(e) =>
+                      setNewAppointment({
+                        ...newAppointment,
+                        start: e.target.value,
+                      })
+                    }
                     className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200"
                   />
                   <input
                     type="datetime-local"
                     value={newAppointment.end}
-                    onChange={(e) => setNewAppointment({ ...newAppointment, end: e.target.value })}
+                    onChange={(e) =>
+                      setNewAppointment({
+                        ...newAppointment,
+                        end: e.target.value,
+                      })
+                    }
                     className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200"
                   />
                   <button

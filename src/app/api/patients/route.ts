@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 const BASE_URL = process.env.MODMED_TOKEN_ENDPOINT;
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     const cookieStore = await cookies();
 

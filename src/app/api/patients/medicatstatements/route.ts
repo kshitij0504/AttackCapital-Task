@@ -2,8 +2,6 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 const BASE_URL = process.env.MODMED_TOKEN_ENDPOINT;
-const FIRM_URL_PREFIX = process.env.MODMED_FIRM_URL_PREFIX || "";
-
 export async function POST(request: Request) {
   try {
     const cookieStore = await cookies();
@@ -70,8 +68,7 @@ export async function POST(request: Request) {
 
     console.log("ModMed Response Status:", response.status);
 
-    // Try to parse the response
-    let responseBody: any;
+    let responseBody;
     try {
       responseBody = await response.json();
     } catch {

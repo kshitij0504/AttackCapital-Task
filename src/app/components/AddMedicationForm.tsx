@@ -1,32 +1,35 @@
 "use client";
 
-import { useState, useContext } from "react";
-import { AuthContext } from "../../context/AuthContext";  // Assuming this provides apiKey
+import { useState } from "react";
 
 interface AddMedicationFormProps {
   patientId: string;
   onSuccess: () => void;
 }
 
-export default function AddMedicationForm({ patientId, onSuccess }: AddMedicationFormProps) {
-  const { apiKey } = useContext(AuthContext);  // Get apiKey from context
+export default function AddMedicationForm({
+  patientId,
+  onSuccess,
+}: AddMedicationFormProps) {
   const [formData, setFormData] = useState({
-    status: 'active',
-    medicationText: '',
-    medicationCode: '',
-    medicationSystem: 'RxNorm',
-    startDate: '',
-    endDate: '',
-    dosageRouteText: '',
-    dosageRouteCode: '',
-    dosageRouteSystem: 'FDA RouteOfAdministration',
-    dosageValue: '',
+    status: "active",
+    medicationText: "",
+    medicationCode: "",
+    medicationSystem: "RxNorm",
+    startDate: "",
+    endDate: "",
+    dosageRouteText: "",
+    dosageRouteCode: "",
+    dosageRouteSystem: "FDA RouteOfAdministration",
+    dosageValue: "",
   });
   const [error, setError] = useState("");
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,59 +43,81 @@ export default function AddMedicationForm({ patientId, onSuccess }: AddMedicatio
           reference: `Patient/${patientId}`,
         },
         medicationCodeableConcept: {
-          coding: [{
-            system: formData.medicationSystem,
-            code: formData.medicationCode,
-            display: formData.medicationText
-          }],
-          text: formData.medicationText
+          coding: [
+            {
+              system: formData.medicationSystem,
+              code: formData.medicationCode,
+              display: formData.medicationText,
+            },
+          ],
+          text: formData.medicationText,
         },
-        effectivePeriod: formData.startDate || formData.endDate ? {
-          start: formData.startDate || undefined,
-          end: formData.endDate || undefined
-        } : undefined,
-        dosage: formData.dosageRouteText || formData.dosageValue ? [{
-          route: {
-            coding: formData.dosageRouteCode ? [{
-              system: formData.dosageRouteSystem,
-              code: formData.dosageRouteCode,
-              display: formData.dosageRouteText
-            }] : undefined,
-            text: formData.dosageRouteText || undefined
-          },
-          doseAndRate: formData.dosageValue ? [{
-            doseQuantity: {
-              value: parseFloat(formData.dosageValue) || undefined
-            }
-          }] : undefined
-        }] : undefined
+        effectivePeriod:
+          formData.startDate || formData.endDate
+            ? {
+                start: formData.startDate || undefined,
+                end: formData.endDate || undefined,
+              }
+            : undefined,
+        dosage:
+          formData.dosageRouteText || formData.dosageValue
+            ? [
+                {
+                  route: {
+                    coding: formData.dosageRouteCode
+                      ? [
+                          {
+                            system: formData.dosageRouteSystem,
+                            code: formData.dosageRouteCode,
+                            display: formData.dosageRouteText,
+                          },
+                        ]
+                      : undefined,
+                    text: formData.dosageRouteText || undefined,
+                  },
+                  doseAndRate: formData.dosageValue
+                    ? [
+                        {
+                          doseQuantity: {
+                            value:
+                              parseFloat(formData.dosageValue) || undefined,
+                          },
+                        },
+                      ]
+                    : undefined,
+                },
+              ]
+            : undefined,
       };
 
-      const response = await fetch('/api/patients/medicatstatements', {
-        method: 'POST',
+      const response = await fetch("/api/patients/medicatstatements", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
-        credentials: 'include'
+        credentials: "include",
       });
 
       console.log(response);
-      
 
       // Read body ONLY ONCE as text
       const responseBody = await response.text();
       if (!response.ok) {
         let errorMessage;
         try {
-          errorMessage = JSON.parse(responseBody);  // Parse from stored text
+          errorMessage = JSON.parse(responseBody); // Parse from stored text
         } catch {
-          errorMessage = responseBody;  // Fallback to raw text
+          errorMessage = responseBody; // Fallback to raw text
         }
         if (response.status === 405) {
-          throw new Error("Method Not Allowed: Please verify the API endpoint configuration.");
+          throw new Error(
+            "Method Not Allowed: Please verify the API endpoint configuration."
+          );
         }
-        throw new Error(JSON.stringify(errorMessage) || 'Failed to add medication');
+        throw new Error(
+          JSON.stringify(errorMessage) || "Failed to add medication"
+        );
       }
 
       // Parse successful response from stored text
@@ -103,22 +128,28 @@ export default function AddMedicationForm({ patientId, onSuccess }: AddMedicatio
         throw new Error("Invalid JSON response from server");
       }
 
+      // Example usage:
+      console.log("Added medication:", data);
+
       // Reset form
       setFormData({
-        status: 'active',
-        medicationText: '',
-        medicationCode: '',
-        medicationSystem: 'RxNorm',
-        startDate: '',
-        endDate: '',
-        dosageRouteText: '',
-        dosageRouteCode: '',
-        dosageRouteSystem: 'FDA RouteOfAdministration',
-        dosageValue: '',
+        status: "active",
+        medicationText: "",
+        medicationCode: "",
+        medicationSystem: "RxNorm",
+        startDate: "",
+        endDate: "",
+        dosageRouteText: "",
+        dosageRouteCode: "",
+        dosageRouteSystem: "FDA RouteOfAdministration",
+        dosageValue: "",
       });
       onSuccess();
     } catch (err) {
-      setError((err as Error).message || "An error occurred while adding the medication.");
+      setError(
+        (err as Error).message ||
+          "An error occurred while adding the medication."
+      );
     }
   };
 
@@ -132,10 +163,12 @@ export default function AddMedicationForm({ patientId, onSuccess }: AddMedicatio
       )}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-slate-700">Status *</label>
-          <select 
-            name="status" 
-            value={formData.status} 
+          <label className="block text-sm font-medium text-slate-700">
+            Status *
+          </label>
+          <select
+            name="status"
+            value={formData.status}
             onChange={handleInputChange}
             className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
           >
@@ -146,89 +179,103 @@ export default function AddMedicationForm({ patientId, onSuccess }: AddMedicatio
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-700">Medication Name *</label>
-          <input 
-            type="text" 
-            name="medicationText" 
-            value={formData.medicationText} 
-            onChange={handleInputChange} 
+          <label className="block text-sm font-medium text-slate-700">
+            Medication Name *
+          </label>
+          <input
+            type="text"
+            name="medicationText"
+            value={formData.medicationText}
+            onChange={handleInputChange}
             required
             className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-700">RxNorm Code *</label>
-          <input 
-            type="text" 
-            name="medicationCode" 
-            value={formData.medicationCode} 
-            onChange={handleInputChange} 
+          <label className="block text-sm font-medium text-slate-700">
+            RxNorm Code *
+          </label>
+          <input
+            type="text"
+            name="medicationCode"
+            value={formData.medicationCode}
+            onChange={handleInputChange}
             required
             className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-700">Start Date</label>
-          <input 
-            type="date" 
-            name="startDate" 
-            value={formData.startDate} 
+          <label className="block text-sm font-medium text-slate-700">
+            Start Date
+          </label>
+          <input
+            type="date"
+            name="startDate"
+            value={formData.startDate}
             onChange={handleInputChange}
             className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-700">End Date</label>
-          <input 
-            type="date" 
-            name="endDate" 
-            value={formData.endDate} 
+          <label className="block text-sm font-medium text-slate-700">
+            End Date
+          </label>
+          <input
+            type="date"
+            name="endDate"
+            value={formData.endDate}
             onChange={handleInputChange}
             className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-700">Dosage Route</label>
-          <input 
-            type="text" 
-            name="dosageRouteText" 
-            value={formData.dosageRouteText} 
+          <label className="block text-sm font-medium text-slate-700">
+            Dosage Route
+          </label>
+          <input
+            type="text"
+            name="dosageRouteText"
+            value={formData.dosageRouteText}
             onChange={handleInputChange}
             placeholder="e.g., ORAL"
             className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-700">Dosage Route Code</label>
-          <input 
-            type="text" 
-            name="dosageRouteCode" 
-            value={formData.dosageRouteCode} 
+          <label className="block text-sm font-medium text-slate-700">
+            Dosage Route Code
+          </label>
+          <input
+            type="text"
+            name="dosageRouteCode"
+            value={formData.dosageRouteCode}
             onChange={handleInputChange}
             placeholder="e.g., C38288"
             className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-700">Dosage Value</label>
-          <input 
-            type="number" 
-            name="dosageValue" 
-            value={formData.dosageValue} 
+          <label className="block text-sm font-medium text-slate-700">
+            Dosage Value
+          </label>
+          <input
+            type="number"
+            name="dosageValue"
+            value={formData.dosageValue}
             onChange={handleInputChange}
             placeholder="e.g., 325"
             className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
           />
         </div>
         <div className="flex justify-end space-x-2">
-          <button 
-            type="button" 
+          <button
+            type="button"
             onClick={() => onSuccess()}
             className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 rounded-md hover:bg-slate-200"
           >
             Cancel
           </button>
-          <button 
+          <button
             type="submit"
             className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
           >

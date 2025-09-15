@@ -1,13 +1,18 @@
 "use client";
 
-import { useEffect, useState, useContext } from "react";
-import { AuthContext } from "../../../context/AuthContext";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from 'next/navigation';
 import AddMedicationForm from "@/app/components/AddMedicationForm";
 
 interface PatientName {
   family?: string;
   given?: string[];
+}
+
+interface FhirExtension {
+  url: string;
+  valueString?: string;
+  extension?: FhirExtension[];
 }
 
 interface PatientResource {
@@ -188,7 +193,6 @@ export default function PatientPage() {
   const params = useParams();
   const id = params.id as string;
   const router = useRouter();
-  const { apiKey } = useContext(AuthContext);
   const [patient, setPatient] = useState<PatientResource | null>(null);
   const [allergies, setAllergies] = useState<AllergyIntolerance[]>([]);
   const [conditions, setConditions] = useState<Condition[]>([]);
@@ -355,17 +359,21 @@ export default function PatientPage() {
     );
   };
 
-  const getEthnicityFromExtensions = (extensions?: any[]) => {
-    if (!extensions) return null;
-    const ethnicityExt = extensions.find(ext => 
-      ext.url === "http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity"
-    );
-    if (ethnicityExt?.extension) {
-      const textExt = ethnicityExt.extension.find((e: any) => e.url === "text");
-      return textExt?.valueString;
-    }
-    return null;
-  };
+  const getEthnicityFromExtensions = (extensions?: FhirExtension[]): string | null => {
+  if (!extensions) return null;
+
+  const ethnicityExt = extensions.find(
+    (ext) => ext.url === "http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity"
+  );
+
+  if (ethnicityExt?.extension) {
+    const textExt = ethnicityExt.extension.find((e) => e.url === "text");
+    return textExt?.valueString || null;
+  }
+
+  return null;
+};
+
 
   const getSeverityBadge = (severity: string) => {
     switch (severity?.toLowerCase()) {

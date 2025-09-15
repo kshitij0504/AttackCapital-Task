@@ -1,13 +1,24 @@
 import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-const BASE_URL = process.env.MODMED_TOKEN_ENDPOINT;
+const BASE_URL = process.env.MODMED_TOKEN_ENDPOINT; // Adjusted for FHIR; change if needed
 
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const resolvedParams = await context.params;
+    const { id } = resolvedParams;
+    if (!id) {
+      return NextResponse.json(
+        { error: "Missing patient ID in path" },
+        { status: 400 }
+      );
+    }
+
+    console.log("Patient ID:", id); // Debug log
+
     const cookieStore = await cookies();
     const apiKey = cookieStore.get("api_key")?.value;
     if (!apiKey) {
@@ -25,16 +36,6 @@ export async function GET(
       );
     }
 
-    const { id } = params;
-    if (!id) {
-      return NextResponse.json(
-        { error: "Missing patient ID in path" },
-        { status: 400 }
-      );
-    }
-
-    console.log("Patient ID:", id); // Debug log
-
     const modmedUrl = `${BASE_URL}/fhir/v2/Immunization?patient=${id}`;
 
     const response = await fetch(modmedUrl, {
@@ -46,7 +47,6 @@ export async function GET(
       },
     });
     console.log(response.ok);
-    
 
     if (!response.ok) {
       let errorMessage;

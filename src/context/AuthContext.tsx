@@ -35,6 +35,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         console.log(resp.ok);
         if (resp.ok) setIsAuthenticated(true);
       } catch (e) {
+        console.error("Session verification failed:", e);
         setIsAuthenticated(false);
       } finally {
         setLoading(false);

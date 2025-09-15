@@ -1,13 +1,11 @@
 import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 const BASE_URL = process.env.MODMED_FHIR_BASE_URL;
 
-export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
+
     const cookieStore = await cookies();
     const apiKey = cookieStore.get("api_key")?.value;
     if (!apiKey) {
@@ -18,8 +16,8 @@ export async function GET(
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    const { id } = params; // Provider ID
+ const resolvedParams = await context.params;
+    const id = resolvedParams.id;
     const { searchParams } = new URL(request.url);
     const date = searchParams.get("date"); // e.g., 2025-09-15
 

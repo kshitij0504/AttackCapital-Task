@@ -1,14 +1,23 @@
 import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-const BASE_URL = process.env.MODMED_TOKEN_ENDPOINT;
+const BASE_URL = process.env.MODMED_TOKEN_ENDPOINT; // Adjusted for FHIR; change if needed
+
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const cookieStore = await cookies();
+    const resolvedParams = await context.params;
+    const { id } = resolvedParams;
+    if (!id) {
+      return NextResponse.json(
+        { error: "Missing patient ID in path" },
+        { status: 400 }
+      );
+    }
 
+    const cookieStore = await cookies();
     const apiKey = cookieStore.get("api_key")?.value;
     if (!apiKey) {
       return NextResponse.json(
@@ -22,14 +31,6 @@ export async function GET(
       return NextResponse.json(
         { error: "Unauthorized - missing token" },
         { status: 401 }
-      );
-    }
-
-    const { id } = params;
-    if (!id) {
-      return NextResponse.json(
-        { error: "Missing patient ID in path" },
-        { status: 400 }
       );
     }
 
