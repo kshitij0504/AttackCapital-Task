@@ -1,37 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🏥 EdTech Healthcare Integration with ModMed API
 
-## Getting Started
+This is a comprehensive **healthcare platform** that integrates with **ModMed's secure APIs** to offer a modern and responsive user experience for managing patient data, medications, and appointment scheduling.
 
-First, run the development server:
+-----
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## ✅ Current Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+  * **Patient Management**
+    Display detailed patient information including demographics, allergies, conditions, and medications.
+  * **Medication Management**
+    Create, update, and list `MedicationStatements`. Patients can also add their medications using a form with proper validation.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+-----
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📅 Upcoming Features
 
-## Learn More
+  * Appointment scheduling (view, book, reschedule, cancel).
+  * Calendar view for appointments.
+  * Dynamic provider and patient rosters.
+  * Billing and clinical encounter modules.
 
-To learn more about Next.js, take a look at the following resources:
+-----
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🛠️ Technology Stack
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+  * **Frontend:** React 18, TypeScript, Tailwind CSS, Next.js (App Router)
+  * **Backend:** Next.js API routes that act as a proxy to the ModMed REST API
 
-## Deploy on Vercel
+-----
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## ⚙️ Setup and Installation
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-# AttackCapital-Task
+Follow these steps to set up and run the project locally.
+
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/your-username/edtech-healthcare-modmed.git
+    cd edtech-healthcare-modmed
+    ```
+2.  **Create a `.env` file:**
+    Create a new file named `.env` in the root directory and add the following variables:
+    ```env
+    MODMED_TOKEN_ENDPOINT=https://stage.ema-api.com/ema-dev/firm/entpmsandbox393/ema/ws/oauth2/grant
+    ```
+3.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
+4.  **Run the development server:**
+    ```bash
+    npm run dev
+    ```
+
+-----
+
+## 🔑 Sandbox Credentials (EHR Login)
+
+You can use the following credentials to test with the ModMed Sandbox environment.
+
+  * **ModMed API Docs:** [ModMed API Docs (PDF)](https://www.modmed.com/wp-content/uploads/2023/04/MMI-API-Documentation-April-2023.pdf)
+  * **Base URL:** `https://stage.ema-api.com/ema-dev/firm`
+  * **Firm URL Prefix:** `entpmsandbox393`
+  * **API Key:** `f69902ad-c2bc-4b30-aa89-e136d26a04b3`
+  * **Username:** `fhir_pmOYS`
+  * **Password:** `NmrxdT7I34`
+
+> 🔐 **Authentication:** The platform uses the **API Key, Username, and Password** for authentication via an OAuth2 grant. Tokens are stored securely in **HTTP-only cookies**.
+
