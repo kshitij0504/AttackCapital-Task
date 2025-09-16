@@ -41,7 +41,7 @@ Follow these steps to set up and run the project locally.
 2.  **Create a `.env` file:**
     Create a new file named `.env` in the root directory and add the following variables:
     ```env
-    MODMED_TOKEN_ENDPOINT=https://stage.ema-api.com/ema-dev/firm/entpmsandbox393/ema/ws/oauth2/grant
+    MODMED_TOKEN_ENDPOINT=https://stage.ema-api.com/ema-dev/firm/entpmsandbox393/ema/
     ```
 3.  **Install dependencies:**
     ```bash
